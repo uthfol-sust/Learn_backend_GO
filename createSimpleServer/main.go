@@ -55,10 +55,6 @@ func main() {
 
 }
 
-// r.HandleFunc("/movies",createMovie).Methods("POST")
-// r.HandleFunc("/movies",updateMovie).Methods("PUT")
-// r.HandleFunc("/movies/{id}",deleteMovie).Methods("DELETE")
-
 
 func createMovie(w http.ResponseWriter, r *http.Request) {
 
