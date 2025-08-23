@@ -1,14 +1,21 @@
-async function getTask() {
-  try {
-    const response = await fetch("/tasks");
-    const data = await response.json();
-    console.log(data);
+import {renderTask ,createTaskListHeader ,changeStatus } from "./utils_func.js"
+import { setupModal } from "./add_task_render.js";
+import { getTasks, createTask } from "./handle_API/handler.js";
 
-    const taskList = document.querySelector(".task-list");
-    taskList.innerText = JSON.stringify(data, null, 2);
-  } catch (error) {
-    console.error("Error fetching task:", error);
-  }
-}
 
-getTask();
+const taskList = document.querySelector(".task-list");
+
+const icons_object = [
+  "fa-solid fa-circle-check" , 
+  "fa-regular fa-circle",  
+];
+
+// add header (add/search/filter)
+taskList.append(createTaskListHeader());
+
+// fetch tasks
+getTasks(taskList, icons_object);
+
+// setup modal logic
+setupModal(taskList);
+

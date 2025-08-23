@@ -1,14 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task</title>
-    <link rel="stylesheet" href="index.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="index.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="task-list"></div>
+  <header>
+    <h1 class="web-name">My Manager</h1>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <nav id="nav-menu">
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <script src="apps.js"></script>
+  <main>
+    <div class="task-list">
+      <!-- Tasks will appear here -->
+    </div>
+  </main>
+  
+  <div class="modal" id="taskModal">
+    <div class="modal-content" id="formvalue">
+      <h2>Add Your New Task</h2>
+      <input type="text" id="taskName" placeholder="Task Name">
+      <select id="taskStatus">
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Done">Done</option>
+      </select>
+      <textarea name="message" rows="4" cols="50" placeholder="Write your task Description..." id="taskDesc" class="taskDesc"></textarea>
+      <input type="date" id="taskDue">
+      <button class="btn-add" id="saveTask">Save</button>
+      <button class="btn-cancel" id="closeModal">Cancel</button>
+    </div>
+  </div>
+
+  <script type="module" src="apps.js"></script>
 </body>
 </html>
