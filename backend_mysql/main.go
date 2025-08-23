@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
@@ -21,13 +23,21 @@ type Album struct {
 }
 
 func main() {
+	erro := godotenv.Load()
+	if erro != nil {
+	log.Fatal("Error loading .env file")
+	}
+
+	user := os.Getenv("DB_USER")
+	pass := os.Getenv("DB_PASS")
+	dbName := os.Getenv("DB_NAME")
 	// Database config
 	cfg := mysql.NewConfig()
-	cfg.User = "root"
-	cfg.Passwd = "324648"
+	cfg.User = user
+	cfg.Passwd = pass
 	cfg.Net = "tcp"
 	cfg.Addr = "127.0.0.1:3306"
-	cfg.DBName = "records"
+	cfg.DBName = dbName
 
 	var err error
 	db, err = sql.Open("mysql", cfg.FormatDSN())
