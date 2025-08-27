@@ -9,7 +9,7 @@ import (
 type User struct {
 	UserID   int    `json:"id"`
 	Name     string `json:"name"`
-	Password string `json:"password"`
+	Password string `json:"-"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`
 }
@@ -33,17 +33,20 @@ func UserAutoMigrate() {
 }
 
 // Register a new user
-func UserRegistration(user *User) *User {
+func UserRegistration(user *User) (*User, error){
 	db := config.GetDB()
 
 	query := `INSERT INTO user (name, password, email, role) VALUES (?, ?, ?, ?);`
 
-	_, err := db.Exec(query, user.Name, user.Password, user.Email, user.Role)
+	result, err:= db.Exec(query, user.Name, user.Password, user.Email, user.Role)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return user
+	id, _ := result.LastInsertId()
+	user.UserID = int(id)
+
+	return user, nil
 }
 
 // Get user by ID
@@ -68,14 +71,14 @@ func GetUserByID(id int) *User {
 }
 
 // Get all users
-func GetAllUsers() []User {
+func GetAllUsers() ( []User , error ){
 	db := config.GetDB()
 
 	query := `SELECT user_id, name, email, role FROM user`
 
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Fatalf("Failed to fetch users: %v", err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -96,10 +99,10 @@ func GetAllUsers() []User {
 	}
 
 	if err = rows.Err(); err != nil {
-		log.Println("Row iteration error:", err)
+		return nil , err
 	}
 
-	return users
+	return users ,nil
 }
 
 
