@@ -2,6 +2,7 @@ package models
 
 import (
 	"log"
+	"database/sql"
 	"taskmanager/pkg/config"
 )
 
@@ -50,7 +51,7 @@ func UserRegistration(user *User) (*User, error){
 }
 
 // Get user by ID
-func GetUserByID(id int) *User {
+func GetUserByID(id int) (*User , error ){
 	db := config.GetDB()
 
 	query := `SELECT user_id, name, email, password, role FROM user WHERE user_id = ?;`
@@ -64,10 +65,10 @@ func GetUserByID(id int) *User {
 		&user.Role,
 	)
 	if err != nil {
-		log.Fatalf("Failed to fetch user: %v", err)
+		return nil, err
 	}
 
-	return user
+	return user ,nil
 }
 
 // Get all users
@@ -106,22 +107,35 @@ func GetAllUsers() ( []User , error ){
 }
 
 
-func UpdateUser(user *User) bool {
+func UpdateUser(user *User) error {
 	db := config.GetDB()
     
 	query := `UPDATE user SET name=?,password=? WHERE user_id=?`
 
 	_, err := db.Exec(query, user.Name , user.Password,user.UserID)
 
-	return err==nil
+	return err
 }
 
-func DeleteUser(ID int) bool {
+func DeleteUser(ID int) error {
 	db := config.GetDB()
 
-	query := `DELETE FROM task WHERE user_id=?`
+	query := `DELETE FROM user WHERE user_id=?`
 
-	_, err := db.Exec(query, ID)
+	result, err := db.Exec(query, ID)
+	if err != nil {
+		return err
+	}
 
-	return err==nil
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
+
