@@ -2,7 +2,6 @@
 package models
 
 import (
-	"fmt"
 	"log"
 	"taskmanager/pkg/config"
 )
@@ -15,7 +14,7 @@ type Task struct {
 	UserID      int    `json:"user_id"`
 }
 
-// Auto-migrate tasks table
+
 func TaskAutoMigrate() {
 	db := config.GetDB()
 
@@ -35,21 +34,21 @@ func TaskAutoMigrate() {
 }
 
 // Insert new task
-func CreateTask(task *Task) *Task {
+func CreateTask(task *Task) (*Task , error) {
 	db := config.GetDB()
 
 	query := `INSERT INTO task(title, description, status, user_id) VALUES (?, ?, ?, ?);`
 
 	_, err := db.Exec(query, task.Title, task.Description, task.Status, task.UserID)
 	if err != nil {
-		fmt.Printf("Failed to insert task: %v", err)
+		return nil , err
 	}
 
-	return task
+	return task , nil
 }
 
 // Get task by ID
-func GetTaskByID(id int) *Task {
+func GetTaskByID(id int) (*Task , error) {
 	db := config.GetDB()
 
 	query := `SELECT task_id, title, description, status, user_id FROM task WHERE task_id = ?;`
@@ -63,21 +62,21 @@ func GetTaskByID(id int) *Task {
 		&task.UserID,
 	)
 	if err != nil {
-		log.Fatalf("Failed to load task ID %d: %v", id, err)
+		return nil , err
 	}
 
-	return task
+	return task ,nil
 }
 
 // Get all tasks
-func GetAllTasks() []Task {
+func GetAllTasks() ([]Task, error) {
 	db := config.GetDB()
 
 	query := `SELECT task_id, title, description, status, user_id FROM task;`
 
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Fatalf("Failed to load all tasks: %v", err)
+		return nil , err
 	}
 	defer rows.Close()
 
@@ -98,19 +97,18 @@ func GetAllTasks() []Task {
 		tasks = append(tasks, task)
 	}
 
-	return tasks
+	return tasks , nil
 }
 
 // Update task by ID
-func UpdateTask(task *Task) error {
+func UpdateTask(task *Task) (*Task ,error) {
 	db := config.GetDB()
 	query := `UPDATE task SET title = ?, description = ?, status = ?, user_id = ? WHERE task_id = ?;`
 	_, err := db.Exec(query, task.Title, task.Description, task.Status, task.UserID, task.TaskID)
 	if err != nil {
-		log.Printf("Failed to update task ID %d: %v", task.TaskID, err)
-		return err
+		return nil , err
 	}
-	return nil
+	return task , nil
 }
 
 func DeleteTask(id int) error {

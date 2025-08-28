@@ -6,7 +6,7 @@ import (
 	"taskmanager/pkg/config"
 )
 
-// User model
+
 type User struct {
 	UserID   int    `json:"id"`
 	Name     string `json:"name"`
@@ -15,7 +15,7 @@ type User struct {
 	Role     string `json:"role"`
 }
 
-// Auto-migrate users table
+
 func UserAutoMigrate() {
 	db := config.GetDB()
 
@@ -33,7 +33,7 @@ func UserAutoMigrate() {
 	}
 }
 
-// Register a new user
+
 func UserRegistration(user *User) (*User, error){
 	db := config.GetDB()
 
@@ -50,20 +50,15 @@ func UserRegistration(user *User) (*User, error){
 	return user, nil
 }
 
-// Get user by ID
+
 func GetUserByID(id int) (*User , error ){
 	db := config.GetDB()
 
 	query := `SELECT user_id, name, email, password, role FROM user WHERE user_id = ?;`
 
 	user := &User{}
-	err := db.QueryRow(query, id).Scan(
-		&user.UserID,
-		&user.Name,
-		&user.Email,
-		&user.Password,
-		&user.Role,
-	)
+	err := db.QueryRow(query, id).Scan(&user.UserID, &user.Name, &user.Email, &user.Password, &user.Role)
+
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +66,7 @@ func GetUserByID(id int) (*User , error ){
 	return user ,nil
 }
 
-// Get all users
+
 func GetAllUsers() ( []User , error ){
 	db := config.GetDB()
 
@@ -137,5 +132,17 @@ func DeleteUser(ID int) error {
 	}
 
 	return nil
+}
+
+
+func FindUserByEmail(email string)(*User , error){
+	db := config.GetDB()
+
+	query := `SELECT password FROM user WHERE email=?;`
+
+	user := &User{}
+	err := db.QueryRow(query,email).Scan(&user.Password)
+
+	return user , err
 }
 

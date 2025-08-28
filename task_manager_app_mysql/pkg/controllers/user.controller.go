@@ -38,7 +38,25 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 
 func Login(w http.ResponseWriter, r * http.Request){
+	user := &models.User{}
+
+	utils.ParseBody(r , user)
+    
+	load_user,err := models.FindUserByEmail(user.Email)
 	
+	if err!=nil{
+		http.Error(w,"Using Unvaild Email to login",http.StatusNonAuthoritativeInfo)
+		return
+	}
+
+	if !utils.CheckPassword(load_user.Password,user.Password){
+		http.Error(w,"Wrong Password",http.StatusNonAuthoritativeInfo)
+		return
+	}
+
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message":"User Login successfully"}`))
 }
 
 func GetAllUsers(w http.ResponseWriter, r *http.Request){
@@ -49,6 +67,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request){
 
 	if err!=nil{
 		http.Error(w,"Failed to load users",http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -64,6 +83,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request){
 	user , err := models.GetUserByID(user_id)
 	if err!=nil{
 		http.Error(w,"Not Exist this User",http.StatusInternalServerError)
+		return
 	}
     
 	json_user , _ := json.Marshal(user)
@@ -83,6 +103,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request){
 	user, err := models.GetUserByID(user_id)
 	if err!=nil{
 		http.Error(w,"Failed to load users",http.StatusInternalServerError)
+		return
 	}
 
 	updateUser := &models.User{}
@@ -93,6 +114,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request){
 	updateUser.Password , errhash = utils.HashPassword(updateUser.Password)
 	if errhash !=nil{
 		fmt.Print("New password hashing Error!")
+		return
 	}
 
 	if updateUser.Name!=""{
@@ -107,6 +129,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request){
 
 	if err_saved!=nil{
 		http.Error(w, "New Data Not Updated!",http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type","application/json")
