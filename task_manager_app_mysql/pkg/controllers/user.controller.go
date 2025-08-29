@@ -1,14 +1,16 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
-	"database/sql"
-	"errors"
+	"time"
 
 	"taskmanager/pkg/models"
+	"taskmanager/pkg/services"
 	"taskmanager/pkg/utils"
 
 	"github.com/gorilla/mux"
@@ -30,10 +32,30 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to register user to database: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if savedUser == nil {
+		http.Error(w, "Failed to register user: got nil user", http.StatusInternalServerError)
+		return
+	}
 
-	w.Header().Set("Content-Type", "application/json")
+	code , errVerify := services.SendVerificationEmail(savedUser.Email)
+	if errVerify != nil {
+		http.Error(w, "Failed to send verification code: "+errVerify.Error(), http.StatusInternalServerError)
+		return
+	}
+
+
+	expiresAt := time.Now().Add(5 * time.Minute)
+	errSave := models.SaveVerification(savedUser.UserID, savedUser.Email, code, expiresAt)
+	if errSave != nil {
+		http.Error(w, "Failed to save verification code: "+errSave.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(savedUser)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Verification code sent to " + savedUser.Email,
+	})
 }
 
 
@@ -154,4 +176,44 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message":"User deleted successfully"}`))
+}
+
+
+func VerifyEmail(w http.ResponseWriter, r *http.Request){
+   email := r.URL.Query().Get("email")
+   code := r.URL.Query().Get("code")
+
+   if email == "" || code == "" {
+		http.Error(w, "Missing email or code", http.StatusBadRequest)
+		return
+	}
+
+	verification, err := models.GetVerificationByEmail(email)
+
+	fmt.Print(err)
+
+	if err != nil {
+		http.Error(w, "No verification record found for this email", http.StatusBadRequest)
+		return
+	}
+
+	if verification.IsVerified {
+		http.Error(w, "Email already verified", http.StatusBadRequest)
+		return
+	}
+
+	if time.Now().After(verification.ExpiresAt) {
+		http.Error(w, "Verification code expired", http.StatusUnauthorized)
+		return
+	}
+
+   err = models.MarkVerified(email)
+   if err != nil {
+		http.Error(w, "Failed to update verification status", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message":"Email verified successfully"}`))
 }

@@ -9,6 +9,7 @@ func RegisterRoutes(router *mux.Router){
 
 	//user handling
 	router.HandleFunc("/signup",controllers.SignUp).Methods("POST")
+	router.HandleFunc("/verify",controllers.VerifyEmail).Methods("GET")
 	router.HandleFunc("/login",controllers.Login).Methods("POST")
 
 

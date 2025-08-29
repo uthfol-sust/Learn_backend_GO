@@ -1,1 +1,4 @@
-GET http://localhost:8000/albums
+http://localhost:8080/send?email=2021831004@student.sust.edu
+
+
+

@@ -26,6 +26,7 @@ func main() {
     config.Connection()
 	models.UserAutoMigrate()
 	models.TaskAutoMigrate()
+	models.EmailVerificationAutoMigrate()
 
 	
 	router := mux.NewRouter()
