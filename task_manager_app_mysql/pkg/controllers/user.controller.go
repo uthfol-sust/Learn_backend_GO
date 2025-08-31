@@ -71,6 +71,19 @@ func Login(w http.ResponseWriter, r * http.Request){
 		return
 	}
 
+
+	//check email 
+	verification, err := models.GetVerificationByEmail(user.Email)
+	if err != nil || verification == nil {
+		http.Error(w, "No verification record found", http.StatusUnauthorized)
+		return
+	}
+	if !verification.IsVerified {
+		http.Error(w, "Your Email is not verified", http.StatusUnauthorized)
+		return
+	}
+
+	//check password
 	if !utils.CheckPassword(load_user.Password,user.Password){
 		http.Error(w,"Wrong Password",http.StatusNonAuthoritativeInfo)
 		return
