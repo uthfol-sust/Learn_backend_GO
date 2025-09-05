@@ -69,7 +69,6 @@ func GetVerificationByEmail(email string) (*EmailVerify, error) {
 }
 
 
-
 func MarkVerified(email string) error {
 	db := config.GetDB()
 	query := `UPDATE email_verifications 

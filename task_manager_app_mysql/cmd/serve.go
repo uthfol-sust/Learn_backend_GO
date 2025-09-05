@@ -12,17 +12,10 @@ import (
 )
 
 func Serve() {
-	errENV := godotenv.Load()
-
-	if errENV != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	//database connection
-	config.Connection()
-	models.UserAutoMigrate()
-	models.TaskAutoMigrate()
-	models.EmailVerificationAutoMigrate()
+	godotenv.Load()
+	config.SetConfig()
+	config.DBConnection()
+	models.MigrateAll()
 
 	mux := http.NewServeMux()
 
