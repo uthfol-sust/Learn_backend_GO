@@ -10,10 +10,7 @@ import (
 	"time"
 
 	"taskmanager/pkg/models"
-	"taskmanager/pkg/services"
 	"taskmanager/pkg/utils"
-
-	"github.com/gorilla/mux"
 )
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
@@ -37,12 +34,11 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code , errVerify := services.SendVerificationEmail(savedUser.Email)
+	code, errVerify := utils.SendVerificationEmail(savedUser.Email)
 	if errVerify != nil {
 		http.Error(w, "Failed to send verification code: "+errVerify.Error(), http.StatusInternalServerError)
 		return
 	}
-
 
 	expiresAt := time.Now().Add(5 * time.Minute)
 	errSave := models.SaveVerification(savedUser.UserID, savedUser.Email, code, expiresAt)
@@ -58,24 +54,22 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-
-func Login(w http.ResponseWriter, r * http.Request){
+func Login(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{}
 
-	utils.ParseBody(r , user)
-    
-	load_user,err := models.FindUserByEmail(user.Email)
-	
-	if err!=nil{
-		http.Error(w,"Using Unvaild Email to login",http.StatusNonAuthoritativeInfo)
+	utils.ParseBody(r, user)
+
+	load_user, err := models.FindUserByEmail(user.Email)
+
+	if err != nil {
+		http.Error(w, "Using Unvaild Email to login", http.StatusNonAuthoritativeInfo)
 		return
 	}
 
-
-	//check email 
+	//check email
 	verification, err := models.GetVerificationByEmail(user.Email)
 	if err != nil || verification == nil {
-		http.Error(w, "No verification record found", http.StatusUnauthorized)
+		http.Error(w, "No user verification record found", http.StatusUnauthorized)
 		return
 	}
 	if !verification.IsVerified {
@@ -84,24 +78,33 @@ func Login(w http.ResponseWriter, r * http.Request){
 	}
 
 	//check password
-	if !utils.CheckPassword(load_user.Password,user.Password){
-		http.Error(w,"Wrong Password",http.StatusNonAuthoritativeInfo)
+	if !utils.CheckPassword(load_user.Password, user.Password) {
+		http.Error(w, "Wrong Password", http.StatusNonAuthoritativeInfo)
 		return
 	}
 
-	w.Header().Set("Content-Type","application/json")
+	//stop here
+	token, er := utils.GenerateToken(load_user.UserID, load_user.Email, load_user.Role)
+	if er != nil {
+		http.Error(w, "Failed to Gernerate Token!", http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message":"User Login successfully"}`))
+	json.NewEncoder(w).Encode(map[string]string{
+		"token":   token,
+		"massage": "\nLogin successful! JWT set in cookie",
+	})
 }
 
-func GetAllUsers(w http.ResponseWriter, r *http.Request){
+func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	var users []models.User
 
-    users , err := models.GetAllUsers()
+	users, err := models.GetAllUsers()
 
-	if err!=nil{
-		http.Error(w,"Failed to load users",http.StatusInternalServerError)
+	if err != nil {
+		http.Error(w, "Failed to load users", http.StatusInternalServerError)
 		return
 	}
 
@@ -110,71 +113,76 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(users)
 }
 
-func GetUserByID(w http.ResponseWriter, r *http.Request){
-	vars := mux.Vars(r)
-
-	user_id , _ := strconv.Atoi(vars["id"])
-
-	user , err := models.GetUserByID(user_id)
-	if err!=nil{
-		http.Error(w,"Not Exist this User",http.StatusInternalServerError)
+func GetUserByID(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	if idStr == "" {
+		utils.ThrowError(w, "Missing user ID", 404)
 		return
 	}
-    
-	json_user , _ := json.Marshal(user)
+
+	user_id, err := strconv.Atoi(idStr)
+
+	fmt.Println("request to find ", user_id)
+	user, err := models.GetUserByID(user_id)
+
+	if err != nil {
+		utils.ThrowError(w, "User Not Exist", 500)
+		return
+	}
+
+	json_user, _ := json.Marshal(user)
 
 	w.Header().Set("Content-Type", "application/json")
 
-    w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusOK)
 	w.Write(json_user)
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request){
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
-	vars := mux.Vars(r)
+	idstr := r.PathValue("id")
 
-	user_id , _ := strconv.Atoi(vars["id"])
+	user_id, _ := strconv.Atoi(idstr)
 
 	user, err := models.GetUserByID(user_id)
-	if err!=nil{
-		http.Error(w,"Failed to load users",http.StatusInternalServerError)
+	if err != nil {
+		http.Error(w, "Failed to load users", http.StatusInternalServerError)
 		return
 	}
 
 	updateUser := &models.User{}
-	utils.ParseBody(r , updateUser)
-
+	utils.ParseBody(r, updateUser)
 
 	var errhash error
-	updateUser.Password , errhash = utils.HashPassword(updateUser.Password)
-	if errhash !=nil{
+	updateUser.Password, errhash = utils.HashPassword(updateUser.Password)
+	if errhash != nil {
 		fmt.Print("New password hashing Error!")
 		return
 	}
 
-	if updateUser.Name!=""{
-       user.Name=updateUser.Name
+	if updateUser.Name != "" {
+		user.Name = updateUser.Name
 	}
 
-	if updateUser.Password!=""{
+	if updateUser.Password != "" {
 		user.Password = updateUser.Password
 	}
 
 	err_saved := models.UpdateUser(user)
 
-	if err_saved!=nil{
-		http.Error(w, "New Data Not Updated!",http.StatusInternalServerError)
+	if err_saved != nil {
+		http.Error(w, "New Data Not Updated!", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
+	idstr := r.PathValue("id")
+	id, _ := strconv.Atoi(idstr)
 
 	err := models.DeleteUser(id)
 	if err != nil {
@@ -191,12 +199,11 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"message":"User deleted successfully"}`))
 }
 
+func VerifyEmail(w http.ResponseWriter, r *http.Request) {
+	email := r.URL.Query().Get("email")
+	code := r.URL.Query().Get("code")
 
-func VerifyEmail(w http.ResponseWriter, r *http.Request){
-   email := r.URL.Query().Get("email")
-   code := r.URL.Query().Get("code")
-
-   if email == "" || code == "" {
+	if email == "" || code == "" {
 		http.Error(w, "Missing email or code", http.StatusBadRequest)
 		return
 	}
@@ -220,8 +227,8 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-   err = models.MarkVerified(email)
-   if err != nil {
+	err = models.MarkVerified(email)
+	if err != nil {
 		http.Error(w, "Failed to update verification status", http.StatusInternalServerError)
 		return
 	}

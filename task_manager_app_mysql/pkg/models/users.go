@@ -1,8 +1,9 @@
 package models
 
 import (
-	"log"
 	"database/sql"
+	"fmt"
+	"log"
 	"taskmanager/pkg/config"
 )
 
@@ -54,12 +55,18 @@ func UserRegistration(user *User) (*User, error){
 func GetUserByID(id int) (*User , error ){
 	db := config.GetDB()
 
-	query := `SELECT user_id, name, email, password, role FROM user WHERE user_id = ?;`
+	query := `SELECT user_id, name, password, email, role FROM user WHERE user_id = ?;`
+    fmt.Println("Running query:", query, "with id:", id)
 
 	user := &User{}
-	err := db.QueryRow(query, id).Scan(&user.UserID, &user.Name, &user.Email, &user.Password, &user.Role)
+	err := db.QueryRow(query, id).Scan(&user.UserID, &user.Name,&user.Password, &user.Email, &user.Role)
+	fmt.Println(err , user)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("No user found with id:", id)
+			return nil, nil
+		}
 		return nil, err
 	}
 

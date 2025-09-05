@@ -1,4 +1,4 @@
-package services
+package utils
 
 import (
 	"fmt"
@@ -10,17 +10,17 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func  GenerateCode() string{
+func GenerateEmailCode() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return  fmt.Sprintf("%06d", r.Intn(1000000))
+	return fmt.Sprintf("%06d", r.Intn(1000000))
 }
 
-func SendVerificationEmail(clientEmail string) (string ,error) {
+func SendVerificationEmail(clientEmail string) (string, error) {
 	userMail := os.Getenv("HOST_EMAIL")
 	emailPass := os.Getenv("EMAIL_PASS")
 	portStr := os.Getenv("MAIL_PORT")
 
-	code := GenerateCode()
+	code := GenerateEmailCode()
 
 	userPort, err := strconv.Atoi(portStr)
 	if err != nil {
@@ -38,5 +38,5 @@ func SendVerificationEmail(clientEmail string) (string ,error) {
 
 	errMsg := d.DialAndSend(msg)
 
-	return code , errMsg
+	return code, errMsg
 }
