@@ -94,6 +94,12 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
+	role := r.Context().Value(utils.RoleKey).(string)
+	if role != "admin" {
+		utils.ThrowError(w, "Only admin can delete task", http.StatusUnauthorized)
+		return
+	}
+
 	idstr := r.PathValue("id")
 
 	req_id, _ := strconv.Atoi(idstr)

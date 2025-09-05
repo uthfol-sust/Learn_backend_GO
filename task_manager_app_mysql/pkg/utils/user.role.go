@@ -2,4 +2,4 @@ package utils
 
 type contextKey string
 
-type UserRole contextKey
+const RoleKey contextKey = "userRole"

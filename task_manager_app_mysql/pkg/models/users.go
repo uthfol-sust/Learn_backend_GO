@@ -56,11 +56,9 @@ func GetUserByID(id int) (*User , error ){
 	db := config.GetDB()
 
 	query := `SELECT user_id, name, password, email, role FROM user WHERE user_id = ?;`
-    fmt.Println("Running query:", query, "with id:", id)
 
 	user := &User{}
 	err := db.QueryRow(query, id).Scan(&user.UserID, &user.Name,&user.Password, &user.Email, &user.Role)
-	fmt.Println(err , user)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -112,9 +110,9 @@ func GetAllUsers() ( []User , error ){
 func UpdateUser(user *User) error {
 	db := config.GetDB()
     
-	query := `UPDATE user SET name=?,password=? WHERE user_id=?`
+	query := `UPDATE user SET name=?,password=?, role=? WHERE user_id=?`
 
-	_, err := db.Exec(query, user.Name , user.Password,user.UserID)
+	_, err := db.Exec(query, user.Name , user.Password, user.Role, user.UserID)
 
 	return err
 }
@@ -145,10 +143,10 @@ func DeleteUser(ID int) error {
 func FindUserByEmail(email string)(*User , error){
 	db := config.GetDB()
 
-	query := `SELECT password FROM user WHERE email=?;`
+	query := `SELECT user_id, password, email, role FROM user WHERE email=?;`
 
 	user := &User{}
-	err := db.QueryRow(query,email).Scan(&user.Password)
+	err := db.QueryRow(query,email).Scan(&user.UserID,&user.Password, &user.Email ,&user.Role)
 
 	return user , err
 }

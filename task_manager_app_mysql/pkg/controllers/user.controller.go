@@ -122,7 +122,6 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	user_id, err := strconv.Atoi(idStr)
 
-	fmt.Println("request to find ", user_id)
 	user, err := models.GetUserByID(user_id)
 
 	if err != nil {
@@ -166,6 +165,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	if updateUser.Password != "" {
 		user.Password = updateUser.Password
+	}
+	if updateUser.Role != "" {
+		user.Role = updateUser.Role
 	}
 
 	err_saved := models.UpdateUser(user)
