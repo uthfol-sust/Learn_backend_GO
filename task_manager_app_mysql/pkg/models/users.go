@@ -16,7 +16,6 @@ type User struct {
 	Role     string `json:"role"`
 }
 
-
 func UserAutoMigrate() {
 	db := config.GetDB()
 

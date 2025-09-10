@@ -4,4 +4,5 @@ func MigrateAll(){
 	UserAutoMigrate()
     TaskAutoMigrate()
     EmailVerificationAutoMigrate()
+    UseResetPasswordAutomigrate()
 }

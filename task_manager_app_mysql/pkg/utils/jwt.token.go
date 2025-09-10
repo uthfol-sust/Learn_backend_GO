@@ -23,7 +23,7 @@ func GenerateToken(u_Id int, u_Name, u_Role string) (string, error) {
 		Role: u_Role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "MyTaskManager",
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
 		},
 	}
 
