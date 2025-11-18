@@ -99,6 +99,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	role := r.Context().Value(utils.RoleKey).(*utils.MyCustomClaims)
+	if role.Role != "admin" {
+		utils.ThrowError(w, "Only admin can view all users", http.StatusUnauthorized)
+		return
+	}
 
 	var users []models.User
 
@@ -139,12 +144,16 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-
+	cur_user := r.Context().Value(utils.RoleKey).(*utils.MyCustomClaims)
 	idstr := r.PathValue("id")
+	req_id, _ := strconv.Atoi(idstr)
 
-	user_id, _ := strconv.Atoi(idstr)
+	if cur_user.ID!=req_id{
+		utils.ThrowError(w,"You can modify only your personal data,can't others!",401)
+		return
+	}
 
-	user, err := models.GetUserByID(user_id)
+	user, err := models.GetUserByID(req_id)
 	if err != nil {
 		http.Error(w, "Failed to load users", http.StatusInternalServerError)
 		return
@@ -187,7 +196,14 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	idstr := r.PathValue("id")
 	id, _ := strconv.Atoi(idstr)
 
+	current_user := r.Context().Value(utils.RoleKey).(*utils.MyCustomClaims)
+	if current_user.Role != "admin" && id!=current_user.ID{
+		utils.ThrowError(w,"You can't able to delete others account",401)
+		return
+	}
+
 	err := models.DeleteUser(id)
+	fmt.Println(id, err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "User not found", http.StatusNotFound)

@@ -14,12 +14,12 @@ type Reset struct {
 func UseResetPasswordAutomigrate() {
 	db := config.GetDB()
 	query := `CREATE TABLE IF NOT EXISTS reset_pass(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    sendcode INT NOT NULL,
-    newPassword VARCHAR(255) NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(user_id)
-);`
+	    id INT AUTO_INCREMENT PRIMARY KEY,
+	    user_id INT NOT NULL,
+	    sendcode INT NOT NULL,
+	    newPassword VARCHAR(255) NOT NULL,
+	    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
+	);`
 
 	_, err := db.Exec(query)
 	if err != nil {

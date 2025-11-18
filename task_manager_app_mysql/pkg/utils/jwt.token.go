@@ -32,19 +32,19 @@ func GenerateToken(u_Id int, u_Name, u_Role string) (string, error) {
 	return token.SignedString([]byte(my_Key))
 }
 
-func VerifyJWT(tokenString string)(string, error) {
+func VerifyJWT(tokenString string)(*MyCustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &MyCustomClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(my_Key), nil
 	})
 
 	if err != nil || !token.Valid {
-		return "", err
+		return nil, err
 	}
 
      claims, ok := token.Claims.(*MyCustomClaims)
 
 	if !ok {
-		return "",fmt.Errorf("could not parse claims")
+		return nil,fmt.Errorf("could not parse claims")
 	}
-	return claims.Role, nil
+	return claims, nil
 }

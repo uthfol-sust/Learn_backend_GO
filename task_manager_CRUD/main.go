@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
-    "math/rand" 
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -30,7 +30,7 @@ var Tasks []Task
 var notifi = 24
 
 func main() {
-	// Dummy task
+
 	Tasks = append(Tasks, Task{
 		ID:            1,
 		Title:         "Finish Golang project",
@@ -46,17 +46,17 @@ func main() {
 
 	router := mux.NewRouter()
 
-	// API routes
-	router.HandleFunc("/tasks",createTask).Methods("POST")
+	router.HandleFunc("/tasks", createTask).Methods("POST")
 	router.HandleFunc("/tasks", getTasks).Methods("GET")
 	router.HandleFunc("/tasks/{id}", getTask).Methods("GET")
-    router.HandleFunc("/tasks/{id}",deleteTask).Methods("DELETE")
+	router.HandleFunc("/tasks/{id}", updateTask).Methods("PUT")
+	router.HandleFunc("/tasks/{id}", deleteTask).Methods("DELETE")
 
 	corsOptions := cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET","POST","PUT","PATCH","DELETE","OPTIONS"},
-		AllowedHeaders:  []string{"Content-Type"},
-        AllowCredentials: true,
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
 	}
 
 	cores := cors.New(corsOptions)
@@ -66,16 +66,16 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8000", handler))
 }
 
-func createTask(w http.ResponseWriter, r *http.Request){
-	w.Header().Set("Content-Type","application/json")
-    
+func createTask(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	var task Task
 
-	if err := json.NewDecoder(r.Body).Decode(&task); err!=nil{
-		http.Error(w,"Invaild JSON format",http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+		http.Error(w, "Invaild JSON format", http.StatusBadRequest)
 		return
 	}
-    
+
 	task.ID = rand.Intn(10000)
 	task.CreatedAt = time.Now()
 	task.UpdatedAt = time.Now()
@@ -111,25 +111,71 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Task not found", http.StatusNotFound)
 }
 
-func deleteTask(w http.ResponseWriter, r *http.Request){
-	w.Header().Set("Content-Type","application/json")
+func deleteTask(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
 
-	id ,err := strconv.Atoi(params["id"])
-	
-	if err != nil{
-       http.Error(w,"Invalid ID",http.StatusBadRequest)
-	   return
+	id, err := strconv.Atoi(params["id"])
+
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
 	}
 
-	for index , item := range Tasks{
-		if item.ID == id{
-            Tasks = append(Tasks[:index],Tasks[index+1:]...)
+	for index, item := range Tasks {
+		if item.ID == id {
+			Tasks = append(Tasks[:index], Tasks[index+1:]...)
 			break
 		}
 	}
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(Tasks)
+}
+
+func updateTask(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		http.Error(w, "Invalid task ID", http.StatusBadRequest)
+		return
+	}
+
+	var updateData map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+
+	for index, item := range Tasks {
+		if item.ID == id {
+			if title, ok := updateData["title"].(string); ok {
+				Tasks[index].Title = title
+			}
+			if desc, ok := updateData["description"].(string); ok {
+				Tasks[index].Description = desc
+			}
+			if status, ok := updateData["status"].(string); ok {
+				Tasks[index].Status = status
+			}
+			if priority, ok := updateData["priority"].(string); ok {
+				Tasks[index].Priority = priority
+			}
+			if category, ok := updateData["category"].(string); ok {
+				Tasks[index].Category = category
+			}
+			if notif, ok := updateData["notifications"].(bool); ok {
+				Tasks[index].Notifications = notif
+			}
+			Tasks[index].UpdatedAt = time.Now()
+
+			json.NewEncoder(w).Encode(Tasks[index])
+			return
+		}
+	}
+
+	http.Error(w, "Task not found", http.StatusNotFound)
 }

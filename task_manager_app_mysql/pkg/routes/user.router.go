@@ -12,12 +12,12 @@ func HandleUserRoutes(router *http.ServeMux, m *middleware.Manager) {
 		m.With(http.HandlerFunc(controllers.SignUp)),
 	)
 
-	router.Handle("POST /login",
-		m.With(http.HandlerFunc(controllers.Login)),
-	)
-
 	router.Handle("GET /verify",
 		m.With(http.HandlerFunc(controllers.VerifyEmail)),
+	)
+
+	router.Handle("POST /login",
+		m.With(http.HandlerFunc(controllers.Login)),
 	)
 
 	router.Handle("GET /users",

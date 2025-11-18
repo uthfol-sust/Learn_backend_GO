@@ -16,13 +16,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		role, err := utils.VerifyJWT(authHeader[len("Bearer "):])
+		claims, err := utils.VerifyJWT(authHeader[len("Bearer "):])
 
 		if err != nil {
 			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), utils.RoleKey, role)
+		ctx := context.WithValue(r.Context(), utils.RoleKey, claims)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)

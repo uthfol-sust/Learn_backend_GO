@@ -94,11 +94,6 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
-	role := r.Context().Value(utils.RoleKey).(string)
-	if role != "admin" {
-		utils.ThrowError(w, "Only admin can delete task", http.StatusUnauthorized)
-		return
-	}
 
 	idstr := r.PathValue("id")
 
@@ -111,5 +106,5 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message":"User deleted successfully"}`))
+	w.Write([]byte(`{"message":"Task deleted successfully"}`))
 }
