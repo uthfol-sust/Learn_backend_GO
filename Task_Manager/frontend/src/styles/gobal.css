@@ -1,11 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body{
+  margin: 0;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
   color: rgba(0, 0, 0, 0.87);
-  background-color: #f1ecec;
+  background-color: #e4e4e4;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

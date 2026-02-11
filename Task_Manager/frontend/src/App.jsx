@@ -1,10 +1,26 @@
-import {BrowserRouter, Routes, Route} from "react-router-dom"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import HomePage from "./pages/HomePage"
+import Sidebar from "./components/Sidebar"
+import Layout from "./components/Layout";
+import LoginPage from "./pages/LoginPage";
+
+
+function AppContent() {
+  return (
+    <BrowserRouter>
+      <Sidebar />
+      <Layout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+           <Route path="/login" element={<LoginPage />} />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
+  );
+}
 
 function App() {
-  return <BrowserRouter>
-    
-
-  </BrowserRouter>
+  return <AppContent />;
 }
 
 export default App

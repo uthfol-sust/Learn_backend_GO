@@ -1,0 +1,41 @@
+.sidebar {
+  width: 150px;
+  height: 100vh;
+  background-color: rgb(215, 226, 223);
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding: 20px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.FiMenu{
+    display: flex;
+}
+
+.FiMenu div {
+    margin-left: 0.8rem;
+}
+
+.open {
+  transform: translateX(0);
+}
+
+.close {
+  transform: translateX(-100%);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 10px;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.sidebar li:hover {
+  color: rgb(215, 191, 6);
+}
