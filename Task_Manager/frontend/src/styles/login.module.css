@@ -1,0 +1,98 @@
+.loginpage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.logincard {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 30%;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+  margin: 0;
+}
+
+p {
+  font-size: inherit;
+  color: gray;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+}
+
+.inputfield {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.passwordwrapper {
+  position: relative;
+}
+
+.eyeicon {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+}
+
+.forgotpassword {
+  color: purple;
+  font-size: 12px;
+  text-align: right;
+  cursor: pointer;
+}
+
+.loginbtn {
+  width: 100%;
+  background: purple;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 20px;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+.googlebtn {
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 20px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.googlebtn img {
+  width: 20px;
+}
+
+.registertext {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.registertext span {
+  color: purple;
+  cursor: pointer;
+}
+.loginImage{
+    width: 40%;
+    height: 80vh;
+    cursor: pointer;
+}

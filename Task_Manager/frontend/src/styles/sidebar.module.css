@@ -37,5 +37,7 @@
 }
 
 .sidebar li:hover {
-  color: rgb(215, 191, 6);
+  color: purple;
+  text-decoration-line:underline ;
+  text-decoration-thickness: 2px;
 }

@@ -72,7 +72,7 @@
 .login:hover{
     color: rgb(45, 32, 32);
     text-decoration: underline;
-    text-decoration-color:rgb(184, 164, 12);
+    text-decoration-color:purple;
     text-decoration-thickness: 2px;
     background-color: inherit;
     border: none;
